@@ -1,0 +1,21 @@
+table {
+  margin-top: 20px;
+  border-collapse:collapse;
+}
+
+table > tr:nth-child(2n) {
+  background-color: #ddd;
+}
+
+table tr > td {
+  padding: 5px;
+}
+
+table thead .node-col {
+  cursor: pointer;
+}
+
+label {
+  display: block;
+  margin-bottom: 10px;
+}
