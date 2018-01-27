@@ -1,9 +1,14 @@
+html, body {
+  margin: 0 10%;
+}
+
 table {
   margin-top: 20px;
+  width: 100%;
   border-collapse:collapse;
 }
 
-table > tr:nth-child(2n) {
+table tr:nth-child(2n) {
   background-color: #ddd;
 }
 
@@ -13,6 +18,14 @@ table tr > td {
 
 table thead .node-col {
   cursor: pointer;
+}
+
+table thead {
+  background-color: powderblue;
+}
+
+table thead th {
+  text-align: left;
 }
 
 label {
