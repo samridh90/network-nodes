@@ -104,7 +104,8 @@ function shouldRenderNextChunk(scrollHeight, scrollTop, clientHeight) {
 
 function createRow(node, connections) {
   const result = _.keys(connections).reduce((intermediate, connection) => {
-    return `${intermediate}<span class="btn btn-sm">${connection}</span>`;
+    const dist = connections[connection];
+    return `${intermediate}<span class="btn btn-sm badge m-2" data-badge="${dist}">${connection}</span>`;
   }, '');
   return $(`<tr><td><span class="btn btn-sm">${node}</span></td><td>${result}</td></tr>`);
 }
