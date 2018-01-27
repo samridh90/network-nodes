@@ -108,6 +108,7 @@ function createRow(node, connections) {
   return $(`<tr><td><span class="btn btn-sm">${node}</span></td><td>${result}</td></tr>`);
 }
 
+
 /* shortest path related functions */
 function setupFormHandlers(nodes) {
   const $nodeA = $('#node-a');
@@ -128,12 +129,15 @@ function setupFormHandlers(nodes) {
     const nodeA = $nodeA.val();
     const nodeB = $nodeB.val();
     if (isInputValid(nodeA, nodeB)) {
-      const path = anyPath(nodes, nodeA, nodeB);
-      if (path.length > 0) {
-        $result.html(path.join(' &rarr; '));
-      } else {
-        $result.text(`Did not find a path from ${nodeA} to ${nodeB}`);
-      }
+      // Don't block the click handler
+      setTimeout(() => {
+        const path = anyPath(nodes, nodeA, nodeB);
+        if (path.length > 0) {
+          $result.html(path.join(' &rarr; '));
+        } else {
+          $result.text(`Did not find a path from ${nodeA} to ${nodeB}`);
+        }
+      });
     }
   });
 }
@@ -163,7 +167,7 @@ function anyPath(nodes, nodeA, nodeB) {
   }
   let node = nodeB;
   let path = [];
-  while (node !== ROOT) {
+  while (visited.has(node) && node !== ROOT) {
     path.unshift(node);
     node = visited.get(node);
   }
