@@ -1,36 +1,18 @@
 html {
   margin: 0 10%;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 table {
-  margin-top: 20px;
   width: 100%;
-  border-collapse:collapse;
-}
-
-table tr:nth-child(2n) {
-  background-color: #ddd;
-}
-
-table tr > td {
-  padding: 5px;
 }
 
 table thead .node-col {
   cursor: pointer;
 }
 
-table thead {
-  background-color: powderblue;
-}
-
 table thead th {
   text-align: left;
-}
-
-label {
-  display: block;
-  margin-bottom: 10px;
 }
 
 /* Font Icons */

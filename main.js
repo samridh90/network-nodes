@@ -3,9 +3,10 @@ const DEFAULT_SORT = 'icon-sort';
 const SORTED_ASC = `${DEFAULT_SORT}-asc`;
 const SORTED_DESC = `${DEFAULT_SORT}-desc`;
 
+/* main */
 $(document).ready(() => {
   // TESTING: Try changing these
-  const count = 10000;
+  const count = 50000;
   const seed = 1234567;
   // Put the actual node generation on the event loop to load page ASAP
   setTimeout(() => {
@@ -15,6 +16,7 @@ $(document).ready(() => {
 
     renderNodes(nodeKeys, nodes);
     handleNodeSort(nodeKeys, nodes);
+    setupFormHandlers(nodes);
   });
 });
 
@@ -100,6 +102,70 @@ function shouldRenderNextChunk(scrollHeight, scrollTop, clientHeight) {
 
 
 function createRow(node, connections) {
-  const result = _.keys(connections).join(' ');
-  return $(`<tr><td>${node}</td><td>${result}</td></tr>`);
+  const result = _.keys(connections).reduce((intermediate, connection) => {
+    return `${intermediate}<span class="btn btn-sm">${connection}</span>`;
+  }, '');
+  return $(`<tr><td><span class="btn btn-sm">${node}</span></td><td>${result}</td></tr>`);
+}
+
+/* shortest path related functions */
+function setupFormHandlers(nodes) {
+  const $nodeA = $('#node-a');
+  const $nodeB = $('#node-b');
+  const $anyPathBtn = $('#any-path');
+  const $result = $('#result');
+
+  const isInputValid = (nodeA, nodeB) => {
+    $result.empty();
+    if (!_.isEmpty(nodeA) && !_.isEmpty(nodeB)) {
+      return true;
+    }
+    $result.text('Enter a valid value for both, Node A and Node B');
+    return false;
+  }
+
+  $anyPathBtn.click((event) => {
+    const nodeA = $nodeA.val();
+    const nodeB = $nodeB.val();
+    if (isInputValid(nodeA, nodeB)) {
+      const path = anyPath(nodes, nodeA, nodeB);
+      if (path.length > 0) {
+        $result.html(path.join(' &rarr; '));
+      } else {
+        $result.text(`Did not find a path from ${nodeA} to ${nodeB}`);
+      }
+    }
+  });
+}
+
+
+function anyPath(nodes, nodeA, nodeB) {
+  // BFS
+  const ROOT = 'root';
+  let visited = new Map();
+  let queue = [nodeA];
+  visited.set(nodeA, ROOT);
+  while (queue.length > 0) {
+    const node = queue.shift();
+    if (node === nodeB) {
+      // Found the path
+      break;
+    }
+    // Get all adjacent nodes
+    const adjacentNodes = _.keys(nodes[node]);
+    for (let adjacentNode of adjacentNodes) {
+      // Add them to the queue only if they haven't been visited
+      if (!visited.has(adjacentNode)) {
+        visited.set(adjacentNode, node);
+        queue.push(adjacentNode);
+      }
+    }
+  }
+  let node = nodeB;
+  let path = [];
+  while (node !== ROOT) {
+    path.unshift(node);
+    node = visited.get(node);
+  }
+  return path;
 }

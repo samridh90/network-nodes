@@ -7,6 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Network Nodes</title>
     <!--End default VSCode stuff-->
+    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
     <link rel="stylesheet" type="text/css" href="style.css">
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.3.0/lodash.min.js"></script>
@@ -15,7 +16,21 @@
 </head>
 <body>
     <div class="container">
-        <table>
+        <h2>Check Connectivity</h2>
+        <form>
+            <label for="node-a">Node A
+                <input name="node-a" id="node-a" type="text" maxlength="10">
+            </label>
+            <label for="node-b">Node B
+                <input name="node-b" id="node-b" type="text" maxlength="10">
+            </label>
+            <button type="button" id="any-path">Any Path</button>
+
+            <h4 class="mt-2" id="result"></h4>
+        </form>
+        <div class="divider"></div>
+        <h2>All Nodes</h2>
+        <table class="table table-striped table-hover">
             <thead>
                 <tr>
                     <th class="node-col" id="node-col">
