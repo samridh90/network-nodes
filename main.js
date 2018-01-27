@@ -2,6 +2,7 @@
 const DEFAULT_SORT = 'icon-sort';
 const SORTED_ASC = `${DEFAULT_SORT}-asc`;
 const SORTED_DESC = `${DEFAULT_SORT}-desc`;
+const PREFIX = 'node';
 
 /* main */
 $(document).ready(() => {
@@ -16,7 +17,7 @@ $(document).ready(() => {
 
     renderNodes(nodeKeys, nodes);
     handleNodeSort(nodeKeys, nodes);
-    setupFormHandlers(nodes);
+    setupFormHandlers(nodeKeys, nodes);
   });
 });
 
@@ -43,7 +44,7 @@ function handleNodeSort(nodeKeys, nodes) {
 
 
 function nodeKeyComparator(nodeKeyA, nodeKeyB) {
-  const keyAIdx = parseInt(nodeKeyA.slice(4), 10), keyBIdx = parseInt(nodeKeyB.slice(4), 10);
+  const keyAIdx = +nodeKeyA.slice(4), keyBIdx = +nodeKeyB.slice(4);
   if (keyAIdx < keyBIdx) {
     return -1;
   } else if (keyAIdx > keyBIdx) {
@@ -110,11 +111,11 @@ function createRow(node, connections) {
 
 
 /* shortest path related functions */
-function setupFormHandlers(nodes) {
-  const $nodeA = $('#node-a');
-  const $nodeB = $('#node-b');
-  const $anyPathBtn = $('#any-path');
-  const $result = $('#result');
+function setupFormHandlers(nodeKeys, nodes) {
+  const $nodeA = $('#node-a'), $nodeB = $('#node-b'),
+        $getPathsBtn = $('#get-paths'), $result = $('#result'),
+        $anyPath = $('#any-path'), $anyPathCost = $('#any-path-cost'),
+        $shortestPath = $('#shortest-path'), $shortestPathCost = $('#shortest-path-cost');
 
   const isInputValid = (nodeA, nodeB) => {
     $result.empty();
@@ -125,15 +126,21 @@ function setupFormHandlers(nodes) {
     return false;
   }
 
-  $anyPathBtn.click((event) => {
+  $getPathsBtn.click((event) => {
     const nodeA = $nodeA.val();
     const nodeB = $nodeB.val();
     if (isInputValid(nodeA, nodeB)) {
       // Don't block the click handler
       setTimeout(() => {
-        const path = anyPath(nodes, nodeA, nodeB);
+        const {path, cost} = anyPath(nodes, nodeA, nodeB);
         if (path.length > 0) {
-          $result.html(path.join(' &rarr; '));
+          // Compute shortest only if at least one path exists
+          const {path: sPath, cost: lCost} = shortestPath(nodeKeys, nodes, nodeA, nodeB);
+
+          $anyPath.html(path.join(' &rarr; '));
+          $anyPathCost.html(cost);
+          $shortestPath.html(sPath.join(' &rarr; '));
+          $shortestPathCost.html(lCost);
         } else {
           $result.text(`Did not find a path from ${nodeA} to ${nodeB}`);
         }
@@ -144,7 +151,7 @@ function setupFormHandlers(nodes) {
 
 
 function anyPath(nodes, nodeA, nodeB) {
-  // BFS
+  // Breadth First Search
   const ROOT = 'root';
   let visited = new Map();
   let queue = [nodeA];
@@ -167,9 +174,63 @@ function anyPath(nodes, nodeA, nodeB) {
   }
   let node = nodeB;
   let path = [];
+  let cost = 0;
   while (visited.has(node) && node !== ROOT) {
     path.unshift(node);
-    node = visited.get(node);
+    const parent = visited.get(node);
+    cost += nodes[parent] ? nodes[parent][node] : 0;
+    node = parent;
   }
-  return path;
+  return {path, cost};
+}
+
+
+function shortestPath(nodeKeys, nodes, nodeA, nodeB) {
+  // Dijkstra's SSSP
+  const count = nodeKeys.length;
+  // Easier to deal with ints
+  const source = +nodeA.slice(4)
+  const dest = +nodeB.slice(4);
+
+  let priorityQ = new TinyQueue([], (pairA, pairB) => pairA.dist - pairB.dist);
+  let dist = [];
+  let prev = []
+
+  dist[source] = 0;
+  for (let v of _.range(count)) {
+    if (v !== source) {
+      dist[v] = Number.MAX_SAFE_INTEGER;
+    }
+    priorityQ.push({node: v, dist: dist[v]});
+  }
+  while (priorityQ.length > 0) {
+    // least cost node so far
+    const u = priorityQ.pop();
+    if (u.node === dest) {
+      break;
+    }
+
+    const edges = nodes[`${PREFIX}${u.node}`];
+    const adjacentNodes = _.keys(edges);
+
+    for (let node of adjacentNodes) {
+      const v = +node.slice(4);
+      const alternateDist = dist[u.node] + edges[node];
+
+      if (alternateDist < dist[v]) {
+        dist[v] = alternateDist;
+        prev[v] = u.node;
+        priorityQ.push({node: v, dist: alternateDist});
+      }
+    }
+  }
+
+  let path = [];
+  let node = dest;
+  while (!_.isUndefined(prev[node])) {
+    path.unshift(`${PREFIX}${node}`);
+    node = prev[node];
+  }
+  path.unshift(`${PREFIX}${node}`);
+  return {path, cost: dist[dest]};
 }
