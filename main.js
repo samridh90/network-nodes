@@ -17,7 +17,7 @@ $(document).ready(() => {
 
     renderNodes(nodeKeys, nodes);
     handleNodeSort(nodeKeys, nodes);
-    setupFormHandlers(nodeKeys, nodes);
+    setupFormHandlers(nodes, count);
   });
 });
 
@@ -103,16 +103,16 @@ function shouldRenderNextChunk(scrollHeight, scrollTop, clientHeight) {
 
 
 function createRow(node, connections) {
-  const result = _.keys(connections).reduce((intermediate, connection) => {
-    const dist = connections[connection];
-    return `${intermediate}<span class="btn btn-sm badge m-2" data-badge="${dist}">${connection}</span>`;
+  // Sort connections by distance to see closest nodes first
+  const result = _(connections).toPairs().sortBy(1).reduce((res, [conn, dist]) => {
+    return `${res}<span class="btn btn-sm badge m-2" data-badge="${dist}">${conn}</span>`;
   }, '');
-  return $(`<tr><td><span class="btn btn-sm">${node}</span></td><td>${result}</td></tr>`);
+  return $(`<tr><td><span class="btn btn-sm btn-block">${node}</span></td><td>${result}</td></tr>`);
 }
 
 
 /* shortest path related functions */
-function setupFormHandlers(nodeKeys, nodes) {
+function setupFormHandlers(nodes, count) {
   const $nodeA = $('#node-a'), $nodeB = $('#node-b'),
         $getPathsBtn = $('#get-paths'), $result = $('#result'),
         $anyPath = $('#any-path'), $anyPathCost = $('#any-path-cost'),
@@ -136,7 +136,7 @@ function setupFormHandlers(nodeKeys, nodes) {
         const {path, cost} = anyPath(nodes, nodeA, nodeB);
         if (path.length > 0) {
           // Compute shortest only if at least one path exists
-          const {path: sPath, cost: lCost} = shortestPath(nodeKeys, nodes, nodeA, nodeB);
+          const {path: sPath, cost: lCost} = shortestPath(nodes, count, nodeA, nodeB);
 
           $anyPath.html(path.join(' &rarr; '));
           $anyPathCost.html(cost);
@@ -186,9 +186,8 @@ function anyPath(nodes, nodeA, nodeB) {
 }
 
 
-function shortestPath(nodeKeys, nodes, nodeA, nodeB) {
+function shortestPath(nodes, count, nodeA, nodeB) {
   // Dijkstra's SSSP
-  const count = nodeKeys.length;
   // Easier to deal with ints
   const source = +nodeA.slice(4)
   const dest = +nodeB.slice(4);
