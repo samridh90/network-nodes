@@ -18,14 +18,14 @@
 <body>
     <div class="container">
         <h2>Check Connectivity</h2>
-        <form>
+        <form onsubmit="javascript:return false;">
             <label for="node-a">Node A
-                <input name="node-a" id="node-a" type="text" maxlength="10">
+                <input name="node-a" id="node-a" type="text" autofocus maxlength="10">
             </label>
             <label for="node-b">Node B
                 <input name="node-b" id="node-b" type="text" maxlength="10">
             </label>
-            <button type="button" class="btn btn-primary" id="get-paths">Get Paths</button>
+            <button type="submit" class="btn btn-primary mt-2" id="get-paths">Get Paths</button>
             <div class="mt-2 text-error" id="result"></div>
             <table class="table table-striped mt-2">
                 <thead>
